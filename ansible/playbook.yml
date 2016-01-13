@@ -1,0 +1,27 @@
+- hosts: all
+  sudo: true
+  tasks:
+
+      - name: install build esentials
+        apt: name=build-essential
+
+      - name: install openvpn
+        apt: name=openvpn
+
+      - name: get the package script
+        shell: >
+          curl -sL https://deb.nodesource.com/setup_5.x | sudo -E bash -
+          creates=/etc/apt/sources.list.d/nodesource.list
+
+      - name: install nodejs
+        apt: name=nodejs
+
+      - name: install nodeamon
+        shell: >
+          npm install -g nodemon
+          creates=/usr/lib/node_modules/nodemon
+
+      - name: install build and toolchain dependencies
+        command: npm install --no-optional chdir=/vagrant/src
+        sudo: yes
+        sudo_user: vagrant

@@ -1,0 +1,10 @@
+{ 
+	"name" : "vpn_switcher-server",
+	"dependencies" : { 
+		"express" 		: "4.x",
+		"multer"		: "1.1.x",
+		"body-parser"	: "1.14.x",
+		"node-persist"	: "0.0.x"
+	},
+	"scripts" : { "start" : "node server.js" }
+}

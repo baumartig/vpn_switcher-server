@@ -1,0 +1,12 @@
+{
+	"vpn-username": {
+		"label"	:	"VPN Username",
+		"type"	:	"text",
+		"value"	:	""
+	},
+	"vpn-password": {
+		"label"	:	"VPN Password",
+		"type"	:	"password",
+		"value"	:	""
+	}
+}

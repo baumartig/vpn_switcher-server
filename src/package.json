@@ -4,6 +4,7 @@
 		"express" 		: "4.x",
 		"multer"		: "1.1.x",
 		"body-parser"	: "1.14.x",
+		"websocket"		: "1.0.22",
 		"node-persist"	: "0.0.x"
 	},
 	"scripts" : { "start" : "node server.js" }

@@ -119,6 +119,10 @@ module.exports = {
 
   vpnImport: function () {
   	return service.importVpns();
+  },
+
+  getStatus: function(sendStatus) {
+  	service.status(sendStatus);
   }
 };
 
@@ -156,10 +160,11 @@ var service = {
 		});
 	},
 
-	status: function() {
-		exec("ifconfig | grep -o tun0", function (error, stdout, stderr) {
+	status: function(sendStatus) {
+		exec("ifconfig tun0", function (error, stdout, stderr) {
 			puts(error, stdout, stderr);
 			// parse output and save the tun0 status
+			sendStatus(service.status);
 		});
 		http.get("http://ipinfo.io/country", function (response) {
 			console.log("Get current country response: " + response);
@@ -167,8 +172,11 @@ var service = {
 			if (countryRegex.test(response)) {
 				service.status.country = response;
 			} else {
+				service.status.country = undefined;
 				console.error('Invalid current country response: ' + response);
 			}
+
+			sendStatus(service.status);
 		});
 	},
 

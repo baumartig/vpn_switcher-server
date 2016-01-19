@@ -8,6 +8,7 @@ Vagrant.configure(2) do |config|
   config.vm.box = "ubuntu/trusty32"
 
   config.vm.network "forwarded_port", guest: 3000, host: 3000 # express server port
+  config.vm.network "forwarded_port", guest: 8000, host: 8000 # ws port
 
   # Disable the new default behavior introduced in Vagrant 1.7, to
   # ensure that all Vagrant machines will use the same SSH key pair.

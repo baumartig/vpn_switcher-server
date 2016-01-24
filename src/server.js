@@ -61,6 +61,38 @@ wsServer.on('request', function(request) {
     });
 });
 
+// Status Loop
+var LOOP_TIME = 5000;
+
+var sendStatus = function(status) {
+	if (hasWsConnections()) {
+		for (var connectionIndex in wsServer.connections) {
+			var connection = wsServer.connections[connectionIndex];
+			console.log('Send Status');
+			var statusString = JSON.stringify(status);
+			connection.sendUTF(statusString);
+		}
+	} else {
+		console.log('No connection');
+	}
+}
+
+var statusLoop = function () {
+	if (hasWsConnections()) {
+		service.getStatus(sendStatus);
+	}
+
+	setTimeout(statusLoop, LOOP_TIME);
+};
+
+var hasWsConnections = function () {
+	return wsServer
+			&& wsServer.connections
+			&& wsServer.connections.length > 0
+}
+
+setTimeout(statusLoop, LOOP_TIME);
+
 // App
 var app = express();
 

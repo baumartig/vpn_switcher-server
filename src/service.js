@@ -122,7 +122,7 @@ module.exports = {
   },
 
   getStatus: function(sendStatus) {
-  	service.status(sendStatus);
+  	service.refreshStatus(sendStatus);
   }
 };
 
@@ -160,24 +160,47 @@ var service = {
 		});
 	},
 
-	status: function(sendStatus) {
+	refreshStatus: function(sendStatus) {
 		exec("ifconfig tun0", function (error, stdout, stderr) {
-			puts(error, stdout, stderr);
 			// parse output and save the tun0 status
-			sendStatus(service.status);
-		});
-		http.get("http://ipinfo.io/country", function (response) {
-			console.log("Get current country response: " + response);
-			// parse output and save the country status
-			if (countryRegex.test(response)) {
-				service.status.country = response;
+			if (stdout && stdout.length > 0) {
+				console.error('Tunnel device found.');
+				service.status.hasTunnel = true;
 			} else {
-				service.status.country = undefined;
-				console.error('Invalid current country response: ' + response);
+				// no tun device
+				console.error('No tunnel device found.');
+				service.status.hasTunnel = false;
 			}
-
 			sendStatus(service.status);
 		});
+		try {
+			http.get("http://freegeoip.net/json/", function (response) {
+				// parse output and save the country status
+				var statusCode = response.statusCode;
+				if (statusCode == 200) {
+					response.on('data', function (data) {
+						var jsonResponse = JSON.parse(data);
+						var country = jsonResponse.country_code;
+
+						if (countryRegex.test(country)) {
+							console.error('Current country: ' + country);
+							service.status.country = country;
+						} else {
+							service.status.country = undefined;
+							console.error('Invalid current country: ' + country);
+						}
+	  				});
+				} else {
+					console.error('Error getting country information statusCode: '
+						+ response.statusCode
+						+ ' statusMessage: ' + response.statusMessage);
+				}
+
+				sendStatus(service.status);
+			});
+		} catch (error) {
+			console.log(error);
+		}
 	},
 
 	importVpns: function() {

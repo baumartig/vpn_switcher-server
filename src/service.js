@@ -62,8 +62,8 @@ module.exports = {
 			    			+ "\n"
 			    			+ settings['vpn-password'].value;
     fs.writeFile("/etc/openvpn/user.txt",
-    			accountContent,
-    			(err) => {
+    			accountContent, 
+                function (err) {
 				  if (err) throw err;
 				});
 
@@ -206,7 +206,7 @@ var service = {
 	importVpns: function() {
 		exec("service openvpn status",
 			execOpt, 
-			(error, stdout, stderr) => {
+			function (error, stdout, stderr) {
 			var lines = stdout.split('\n');
 			var vpnConfigs = [];
 			for (var index in lines) {

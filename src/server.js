@@ -62,15 +62,21 @@ wsServer.on('request', function(request) {
 });
 
 // Status Loop
-var LOOP_TIME = 5000;
+var LOOP_TIME = 10000;
+var sending = false;
 
 var sendStatus = function(status) {
-	if (hasWsConnections()) {
+	if (hasWsConnections() && !sending) {
+    sending = true;
 		for (var connectionIndex in wsServer.connections) {
 			var connection = wsServer.connections[connectionIndex];
-			console.log('Send Status');
-			var statusString = JSON.stringify(status);
-			connection.sendUTF(statusString);
+		  var statusString = JSON.stringify(status);
+      connection.sendUTF(statusString, function(error) {
+          if (error) {
+            console.log('Error sending status: ' + error);
+          }
+          sending = false;
+      });
 		}
 	} else {
 		console.log('No connection');
@@ -97,25 +103,6 @@ setTimeout(statusLoop, LOOP_TIME);
 var app = express();
 
 app.use(bodyParser.json()); // for parsing application/json
-
-// Add headers
-app.use(function (req, res, next) {
-    // Website you wish to allow to connect
-    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5000');
-
-    // Request methods you wish to allow
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-
-    // Request headers you wish to allow
-    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
-
-    // Set to true if you need the website to include cookies in the requests sent
-    // to the API (e.g. in case you use sessions)
-    res.setHeader('Access-Control-Allow-Credentials', true);
-
-    // Pass to next layer of middleware
-    next();
-});
 
 app.put('/restart', function (req, res) {
 	var response = service.restart();

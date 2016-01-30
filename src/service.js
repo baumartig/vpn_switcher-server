@@ -173,34 +173,32 @@ var service = {
 			}
 			sendStatus(service.status);
 		});
-		try {
-			http.get("http://freegeoip.net/json/", function (response) {
-				// parse output and save the country status
-				var statusCode = response.statusCode;
-				if (statusCode == 200) {
-					response.on('data', function (data) {
-						var jsonResponse = JSON.parse(data);
-						var country = jsonResponse.country_code;
+		http.get("http://freegeoip.net/json/", function (response) {
+			// parse output and save the country status
+			var statusCode = response.statusCode;
+			if (statusCode == 200) {
+				response.on('data', function (data) {
+					var jsonResponse = JSON.parse(data);
+					var country = jsonResponse.country_code;
 
-						if (countryRegex.test(country)) {
-							console.error('Current country: ' + country);
-							service.status.country = country;
-						} else {
-							service.status.country = undefined;
-							console.error('Invalid current country: ' + country);
-						}
-	  				});
-				} else {
-					console.error('Error getting country information statusCode: '
-						+ response.statusCode
-						+ ' statusMessage: ' + response.statusMessage);
-				}
+					if (countryRegex.test(country)) {
+						console.error('Current country: ' + country);
+						service.status.country = country;
+					} else {
+						service.status.country = undefined;
+						console.error('Invalid current country: ' + country);
+					}
+  				});
+			} else {
+				console.error('Error getting country information statusCode: '
+					+ response.statusCode
+					+ ' statusMessage: ' + response.statusMessage);
+			}
 
-				sendStatus(service.status);
-			});
-		} catch (error) {
-			console.log(error);
-		}
+			sendStatus(service.status);
+		}).on('error', function (e) {
+            console.log('Got error: ' + e.message);
+        });
 	},
 
 	importVpns: function() {

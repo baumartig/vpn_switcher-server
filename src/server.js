@@ -40,24 +40,25 @@ wsServer.on('request', function(request) {
 	console.log((new Date()) + ' Connection from origin ' + request.origin);
 
 	if (!originIsAllowed(request.origin)) {// Make sure we only accept requests from an allowed origin
+      console.log('WS: reject connection request');
       request.reject();
       return;
     }
         
     var connection = request.accept('echo-protocol', request.origin);
-    console.log((new Date()) + ' Connection accepted.');
+    console.log('WS: ' + (new Date()) + ' Connection accepted.');
     connection.on('message', function(message) {
         if (message.type === 'utf8') {
-            console.log('Received Message: ' + message.utf8Data);
+            console.log('WS: Received Message: ' + message.utf8Data);
             connection.sendUTF(message.utf8Data);
         }
         else if (message.type === 'binary') {
-            console.log('Received Binary Message of ' + message.binaryData.length + ' bytes');
+            console.log('WS: Received Binary Message of ' + message.binaryData.length + ' bytes');
             connection.sendBytes(message.binaryData);
         }
     });
     connection.on('close', function(reasonCode, description) {
-        console.log((new Date()) + ' Peer ' + connection.remoteAddress + ' disconnected.');
+        console.log('WS: ' + (new Date()) + ' Peer ' + connection.remoteAddress + ' disconnected.');
     });
 });
 
@@ -67,19 +68,21 @@ var sending = false;
 
 var sendStatus = function(status) {
 	if (hasWsConnections() && !sending) {
+    console.log('WS: start sending');
     sending = true;
 		for (var connectionIndex in wsServer.connections) {
 			var connection = wsServer.connections[connectionIndex];
 		  var statusString = JSON.stringify(status);
       connection.sendUTF(statusString, function(error) {
           if (error) {
-            console.log('Error sending status: ' + error);
+            console.log('WS: Error sending status: ' + error);
           }
           sending = false;
+          console.log('WS: finished sending');
       });
 		}
 	} else {
-		console.log('No connection');
+		console.log('WS: No connection or sending.');
 	}
 }
 
@@ -105,16 +108,18 @@ var app = express();
 app.use(bodyParser.json()); // for parsing application/json
 
 app.put('/restart', function (req, res) {
-	var response = service.restart();
-  	res.send(response);
+  console.log('PUT: restart');
+  var response = service.restart();
+  res.send(response);
 });
 
 app.get('/settings', function (req, res) {
-  	res.json(service.getSettings());
+  console.log('GET: settings');
+  res.json(service.getSettings());
 });
 
 app.put('/settings', function (req, res) {
-	console.log("set settings:" + JSON.stringify(req.body));
+	console.log("PUT: settings:" + JSON.stringify(req.body));
 	var settings = req.body;
 
 	var settings = service.setSettings(settings);
@@ -123,11 +128,12 @@ app.put('/settings', function (req, res) {
 });
 
 app.get('/current', function (req, res) {
-  	res.json(service.getCurrentVpn());
+  console.log('GET: current vpn');
+  res.json(service.getCurrentVpn());
 });
 
 app.put('/current', function (req, res) {
-	console.log("set current vpn:" + JSON.stringify(req.body));
+	console.log("PUT: current vpn:" + JSON.stringify(req.body));
 	var newVpn = req.body;
 
 	var currentVpn = service.setCurrentVpn(newVpn);
@@ -136,15 +142,17 @@ app.put('/current', function (req, res) {
 });
 
 app.get('/vpn/list', function (req, res) {
-  	res.json(service.getVpnList());
+  console.log('GET: vpns');
+  res.json(service.getVpnList());
 });
 
 app.get('/vpn/favorites', function (req, res) {
-  	res.json(service.getVpnFavoritesList());
+  console.log('GET: favorites');
+  res.json(service.getVpnFavoritesList());
 });
 
 app.get('/vpn/get/:name', function (req, res) {
-	console.log('GET vpn. VPNs:' + req.params);
+	console.log('GET: vpn by name');
 	if(req.params.name < 0) {
     	res.statusCode = 404;
     	return res.send('Error 404: No vpn found');
@@ -163,7 +171,7 @@ app.get('/vpn/get/:name', function (req, res) {
 });
 
 app.get('/vpn/toggle-favorite/:name', function (req, res) {
-	console.log('GET vpn. VPNs:' + req.params);
+	console.log('GET: favorite vpn by name');
 	if(req.params.name < 0) {
     	res.statusCode = 404;
     	return res.send('Error 404: No vpn found');
@@ -182,6 +190,7 @@ app.get('/vpn/toggle-favorite/:name', function (req, res) {
 });
 
 app.put('/vpn/import', function (req, res) {
+  console.log('PUT: import');
 	var response = service.vpnImport();
   	res.send(response);
 });
